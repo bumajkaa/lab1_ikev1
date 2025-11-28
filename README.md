@@ -7,4 +7,4 @@ python gen.py -m sha1 -p 1z2y3S -f 'Куранова.txt' -o 'test.txt'\
 -o - куда записать сформированные данные через *
 
 python crack.py -m dadada test.txt\
--m - маска\
+-m - маска
