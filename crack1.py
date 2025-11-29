@@ -161,6 +161,10 @@ class IKEv1Cracker:
         done_count = 0
         password = None
         
+        # Для расчета скорости
+        last_time = self.start_time
+        last_attempts = 0
+        
         while done_count < len(processes):
             try:
                 msg = queue.get()
@@ -170,11 +174,30 @@ class IKEv1Cracker:
                     found_event.set()  
                 elif msg['type'] == 'progress':
                     total_attempts += msg['attempts']
+                    
+                    # Расчет скорости
+                    current_time = time.time()
+                    elapsed_since_last = current_time - last_time
+                    
+                    if elapsed_since_last >= 1.0:  # Обновляем скорость каждую секунду
+                        current_speed = (total_attempts - last_attempts) / elapsed_since_last
+                        last_time = current_time
+                        last_attempts = total_attempts
+                        
+                        speed_suffix = f'| Speed: {current_speed:,.0f} p/s'
+                    else:
+                        current_elapsed = current_time - self.start_time
+                        if current_elapsed > 0:
+                            current_speed = total_attempts / current_elapsed
+                            speed_suffix = f'| Speed: {current_speed:,.0f} p/s'
+                        else:
+                            speed_suffix = '| Speed: calculating...'
+                    
                     self.print_progress_bar(
                         total_attempts, 
                         total_combinations, 
                         prefix='Progress:',
-                        suffix=f'| Attempts: {total_attempts:,}'
+                        suffix=f'| Attempts: {total_attempts:,} {speed_suffix}'
                     )
                 elif msg['type'] == 'done':
                     done_count += 1
@@ -185,6 +208,7 @@ class IKEv1Cracker:
             p.join()
         
         elapsed = time.time() - self.start_time
+        avg_speed = total_attempts / elapsed if elapsed > 0 else 0
         print()  
         
         if password:
@@ -192,6 +216,7 @@ class IKEv1Cracker:
             print(f"PASSWORD FOUND: {password}")
             print(f"Total attempts: {total_attempts:,}")
             print(f"Time elapsed: {elapsed:.2f} seconds")
+            print(f"Average speed: {avg_speed:,.0f} passwords/second")
             print("="*60)
             return password  
         else:
@@ -199,6 +224,7 @@ class IKEv1Cracker:
             print("PASSWORD NOT FOUND")
             print(f"Total attempts: {total_attempts:,}")
             print(f"Time elapsed: {elapsed:.2f} seconds")
+            print(f"Average speed: {avg_speed:,.0f} passwords/second")
             print("="*60)
             return None
 
