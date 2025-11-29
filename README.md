@@ -37,7 +37,9 @@ def crack_password(self, mask):
     
     n_proc = mp.cpu_count()
     # Расчет размера блока для каждого процесса
-    chunk_size = (total_combinations + n_proc - 1) // n_proc <-размер чанка идет с запасом на 1(если кол-во паролей 1000001, то размер чанка будет 125001(т.к. к кол-ву кандидатов добавляется остаток(n_proc - 1)), поэтому total_attempts вышел больше, чем total_combination
+    chunk_size = (total_combinations + n_proc - 1) // n_proc #размер чанка идет с запасом на 1(если кол-во паролей 1000001,
+то размер чанка будет 125001(т.к. к кол-ву кандидатов добавляется остаток(n_proc - 1)),
+поэтому total_attempts вышел больше, чем total_combination
     
     start = 0
     for _ in range(n_proc):
