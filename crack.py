@@ -106,36 +106,57 @@ class IKEv1Cracker:
         last_update = 0
         update_interval = max(1, total_combinations // 1000)  
         
+        # Для расчета скорости
+        last_time = self.start_time
+        last_attempts = 0
+        
         for password_chars in itertools.product(*alphabets):
             password = ''.join(password_chars)
             attempts += 1
             
+            # Расчет текущей скорости
+            current_time = time.time()
+            elapsed_since_last = current_time - last_time
+            
             if attempts % update_interval == 0 or attempts == total_combinations:
-                elapsed = time.time() - self.start_time
+                # Обновляем скорость каждую секунду или при обновлении прогресса
+                if elapsed_since_last >= 1.0:
+                    current_speed = (attempts - last_attempts) / elapsed_since_last
+                    last_time = current_time
+                    last_attempts = attempts
+                else:
+                    total_elapsed = current_time - self.start_time
+                    current_speed = attempts / total_elapsed if total_elapsed > 0 else 0
+                
+                elapsed = current_time - self.start_time
                 rate = attempts / elapsed if elapsed > 0 else 0
                 self.print_progress_bar(
                     attempts, 
                     total_combinations, 
                     prefix='Progress:',
-                    suffix=f'| Current: {password}'
+                    suffix=f' | Speed: {current_speed:,.0f} p/s'
                 )
             
             computed_hash = self.compute_ike_hash(password)
             
             if computed_hash == self.target_hash:
                 elapsed = time.time() - self.start_time
+                avg_speed = attempts / elapsed if elapsed > 0 else 0
                 print("\n" + "="*60)
                 print(f"PASSWORD FOUND: {password}")
                 print(f"Total attempts: {attempts:,}")
                 print(f"Time elapsed: {elapsed:.2f} seconds")
+                print(f"Average speed: {avg_speed:,.0f} passwords/second")
                 print("="*60)
                 return password  
         
         elapsed = time.time() - self.start_time
+        avg_speed = attempts / elapsed if elapsed > 0 else 0
         print("\n" + "="*60)
         print("PASSWORD NOT FOUND")
         print(f"Total attempts: {attempts:,}")
         print(f"Time elapsed: {elapsed:.2f} seconds")
+        print(f"Average speed: {avg_speed:,.0f} passwords/second")
         print("="*60)
         return None
 
