@@ -8,3 +8,6 @@ python gen.py -m sha1 -p 1z2y3S -f 'Куранова.txt' -o 'test.txt'\
 
 python crack.py -m dadada test.txt\
 -m - маска
+
+python crack1.py -m dadada test.txt\
+данный программа использует параллелизацию для оптимизирования процесса поиска пароля
